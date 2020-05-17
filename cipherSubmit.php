@@ -1,5 +1,6 @@
 <?php
 require_once "login.php";
+require_once "substitution.php";
 
 $conn = new mysqli($hn,$un,$pw,$db); //get variables from adminlogin.php
 
@@ -31,93 +32,115 @@ function create_table($conn){
 }
 //create a form where user can submit their input
 function cipher_submission($conn){
-    
-//html form in herdoc
-echo <<<_END
-   <html>
-    <head><title>PHP Form Upload</title></head>
-    <body>
-    <form method="post" action="cipherSubmit.php" enctype="multipart/form-data">
-    <pre>
-Upload File:  <input type="file"  name="textfile" accept = ".txt" size="10">
-              <p><b> OR</b></p>
-<label vertical-align = "middle">Input text:</label>   <textarea name="text" rows="5" cols="30"></textarea>
-<br>
-<label>Select encryption/decryption:</label> <select name="encrdecr" id="cipher">
-    <option name="none" value="0" disabled>Choose An Option</option>
-    <option name ="encrypt" value="1">Encryption</option>
-    <option name ="decrypt" value="2">Decryption</option>
-</select>
-<br>
-<label>Select your cipher methods:</label> <select name="cipher" id="cipher">
-    <option name="none" value="0" disabled>Choose An Option</option>
-    <option  value="substitution">Simple Substitution</option>
-    <option  value="transposition">Double Transposition</option>
-    <option  value="rc4">RC4</option>
-    <option value="des">DES</option>
-</select>
-<br>
-Type in the shifted number if simple substitution is chosen: <input type="number" id="num" name="shiftnum">
-<br>
-<input type = "submit" value="submit" name = "cryptosubmit">
-</pre></form></body></html>
+        
+    //html form in herdoc
+    echo <<<_END
+       <html>
+        <head><title>PHP Form Upload</title></head>
+        <body>
+        <form method="post" action="cipherSubmit.php" enctype="multipart/form-data">
+        <pre>
+    Upload File:  <input type="file"  name="textfile" accept = ".txt" size="10">
+                  <p><b> OR</b></p>
+    <label vertical-align = "middle">Input text:</label>   <textarea name="text" rows="5" cols="30"></textarea>
+    <br>
+    <label>Select encryption/decryption:</label> <select name="encrdecr" id="cipher">
+        <option name="none" value="0" disabled>Choose An Option</option>
+        <option name ="encrypt" value="1">Encryption</option>
+        <option name ="decrypt" value="2">Decryption</option>
+    </select>
+    <br>
+    <label>Select your cipher methods:</label> <select name="cipher" id="cipher">
+        <option name="none" value="0" disabled>Choose An Option</option>
+        <option  value="substitution">Simple Substitution</option>
+        <option  value="transposition">Double Transposition</option>
+        <option  value="rc4">RC4</option>
+        <option value="des">DES</option>
+    </select>
+    <br>
+    Type in the key for the cipher: <input type="text" id="key" name="cipherKey">
+    <br>
+    <input type = "submit" value="submit" name = "cryptosubmit">
+    </pre></form></body></html>
 
-_END;
+    _END;
 
-create_table($conn);//call table for storing user's data
+    create_table($conn);//call table for storing user's data
 
-if(isset($_POST["cryptosubmit"])){
-    
-    if($_FILES["textfile"]["size"]!=0 && !empty($_FILES["textfilet"]["tmp_name"]) || isset($_POST["text"]) && "" !=  (trim($_POST['text']))){
-       
+    if(isset($_POST["cryptosubmit"])){
         
-        $textBox = sanitizeMySQL($conn,$_POST["text"] ); //sanitize the input for user's name
-        $textFile =   sanitizeMySQL($conn, $_FILES["textfile"]["tmp_name"]);//sanitize the user's uploaded file
-        $textFile1 = strtolower(preg_replace("[^A-Za-z0-9.]","", $textFile));//remove any suspicious characters in the file's name
-        $contentFile = file_get_contents($textFile1);
-        
-        
-       // $decrypt = sanitizeMySQL($conn, $_POST["decrypt"]);
-        $encrypt = sanitizeMySQL($conn, $_POST["encrdecr"]);
-        
-        $cipher = sanitizeMySQL($conn, $_POST["cipher"]);
-        //$transposition = sanitizeMySQL($conn, $_POST["transposition"]);
-        //$RC4 = sanitizeMySQL($conn, $_POST["rc4"]);
-        //$DES = sanitizeMySQL($conn, $_POST["des"]);
-        
-        
-        if($encrypt === "1" && isset($_POST["text"])){
+        if($_FILES["textfile"]["size"]!=0 && !empty($_FILES["textfile"]["tmp_name"]) || isset($_POST["text"]) && "" !=  (trim($_POST['text']))){
+           
+            
+            $textBox = sanitizeMySQL($conn,$_POST["text"] ); //sanitize the input for user's name
+            $textFile =   sanitizeMySQL($conn, $_FILES["textfile"]["tmp_name"]);//sanitize the user's uploaded file
+            $textFile1 = strtolower(preg_replace("[^A-Za-z0-9.]","", $textFile));//remove any suspicious characters in the file's name
+            $contentFile = file_get_contents($textFile1);
+            $key = sanitizeMySQL($conn,$_POST["cipherKey"] );
+            
+            
+           // $decrypt = sanitizeMySQL($conn, $_POST["decrypt"]);
+            $encrypt = sanitizeMySQL($conn, $_POST["encrdecr"]);
+            $cipher = sanitizeMySQL($conn, $_POST["cipher"]);
+            //$transposition = sanitizeMySQL($conn, $_POST["transposition"]);
+            //$RC4 = sanitizeMySQL($conn, $_POST["rc4"]);
+            //$DES = sanitizeMySQL($conn, $_POST["des"]);
             
             if($cipher === "substitution"){
-                 
-            // $substitution = sanitizeMySQL($conn, $_POST["cipher"]);
+                if(strlen($key)!=26)
+                    echo "Please enter a key that has exactly 26 unique characters";
+                else{
+                    if($encrypt === "1" && isset($_POST["text"]) && $textBox!=""){
+                            $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$textBox', '$cipher', CURRENT_TIMESTAMP)";
+                            $result1 = $conn->query($stmt);
+                            if (!$result1) die("   error adding into table");
+
+                            echo "The encrypted form is ";
+                            $out = encryptSubstitution($textBox, $key);
+                            echo $out;
+                            echo " done";
+                    }
+                    if($encrypt === "2" && isset($_POST["text"]) && $textBox!=""){
+                            $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$textBox', '$cipher', CURRENT_TIMESTAMP)";
+                            $result1 = $conn->query($stmt);
+                            if (!$result1) die("   error adding into table");
+
+                            echo "The decrypted form is ";
+                            $out = decryptSubstitution($textBox, $key);
+                            echo $out;
+                    }
+                    if($encrypt === "1" && isset($_FILES["textfile"]) && $contentFile!=""){
+                            $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$contentFile', '$cipher', CURRENT_TIMESTAMP)";
+                            $result1 = $conn->query($stmt);
+                            if (!$result1) die("   error adding into table");
+
+                            echo "The encrypted form is ";
+                            $out = encryptSubstitution($contentFile, $key);
+                            echo $out;
+                            echo " done";
+                    }
+                    if($encrypt === "2" && isset($_FILES["textfile"]) && $contentFile!=""){
+                            $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$contentFile', '$cipher', CURRENT_TIMESTAMP)";
+                            $result1 = $conn->query($stmt);
+                            if (!$result1) die("   error adding into table");
+
+                            echo "The decrypted form is ";
+                            $out = decryptSubstitution($contentFile, $key);
+                            echo $out;
+                    }
+                }
+            }
             
-                echo "substitution";
-             
-                
-           
-            $stmt = $conn->prepare('INSERT INTO userdata (`input_text`,`cipher_method`,`date_created`) VALUES(?,?)');//insert values into the table using prepare statement
-            $stmt->bind_param('ss', $textBox, $cipher);
-            $stmt->execute();
             
-            
-            //$stmt->close();
-           // $conn->close();
         }
-        
-       
-        
-    }
-    
-
-
-
-}
-else{
-        echo "You haven't uploaded the file or your file's content is empty. Please reupload. ";
+        else{
+            echo "You haven't uploaded the file or your file's content is empty. Please reupload. ";
+        }
     }
 }
-}
+
+
+
 //functions for sanitization
 function sanitizeMySQL($conn, $var){
     $var = $conn->real_escape_string($var);
