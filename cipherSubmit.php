@@ -98,7 +98,6 @@ function cipher_submission($conn){
                             echo "The encrypted form is ";
                             $out = encryptSubstitution($textBox, $key);
                             echo $out;
-                            echo " done";
                     }
                     if($encrypt === "2" && isset($_POST["text"]) && $textBox!=""){
                             $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$textBox', '$cipher', CURRENT_TIMESTAMP)";
@@ -117,7 +116,7 @@ function cipher_submission($conn){
                             echo "The encrypted form is ";
                             $out = encryptSubstitution($contentFile, $key);
                             echo $out;
-                            echo " done";
+                            //echo " done";
                     }
                     if($encrypt === "2" && isset($_FILES["textfile"]) && $contentFile!=""){
                             $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$contentFile', '$cipher', CURRENT_TIMESTAMP)";
