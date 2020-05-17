@@ -69,7 +69,7 @@ _END;
                            $_SESSION['email'] = $user_email;
                            $_SESSION['pass'] = $user_pwd;
                             
-                            header("location: userUpload.php");
+                            header("location: cipherSubmit.php");
                             die();
                             
                         }
