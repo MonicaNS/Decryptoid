@@ -128,9 +128,23 @@ function cipher_submission($conn){
                             echo $out;
                     }
                 }
-            }
-            
-            
+            } else if ($cipher === "rc4" && isset($_SESSION['name'])) {
+                require_once "RC4.php";
+                $key = "qweasd@#!@543,.><{}-sdf?";
+                if ($contentFile != "") {
+                    $textBox = $contentFile;
+                }
+                if ($encrypt === "1" && isset($_POST["text"]) && $textBox!="") {
+                    $encription = "";
+                    $encription = RC4($key, $textBox);
+                    echo $encription;
+                } else if ($encrypt === "2" && isset($_POST["text"]) && $textBox!="") {
+                    $decription = "";
+                    $decription = RC4($key, $textBox);
+                    echo $decription;
+                }
+                insert_to_userdata($conn, $textBox, $cipher);
+            } 
         }
         else{
             echo "You haven't uploaded the file or your file's content is empty. Please reupload. ";
@@ -138,7 +152,11 @@ function cipher_submission($conn){
     }
 }
 
-
+function insert_to_userdata($conn, $textBox, $cipher) {
+    $stmt = "INSERT INTO userdata(input_text, cipher_method, date_created) VALUES ('$textBox', '$cipher', CURRENT_TIMESTAMP)";
+    $result = $conn->query($stmt);
+    if (!$result) die("There are errors");
+}
 
 //functions for sanitization
 function sanitizeMySQL($conn, $var){
