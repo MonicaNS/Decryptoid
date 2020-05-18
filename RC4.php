@@ -2,8 +2,8 @@
 /**
  * Authors : Wonyoung Kim, Monica Noori Saghar , Kanchanak Khat, Prerana Sunilkumar.
  */
-$key = "FabioIstheBest";
-$input = "wonyoungkim";
+// $key = "FabioIstheBest";
+// $input = "wonyoungkim";
  
 // $en= RC4($key,$input);
 // $de = RC4($key,$en);
