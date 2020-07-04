@@ -1,6 +1,6 @@
 <?php
 /**
- * Authors : **Monica Noori Saghar**, Monica Noori Saghar, Wonyoung Kim, Prerana Sunilkumar, Kanchanak Khat.
+ * Authors : **Monica Noori Saghar**, Wonyoung Kim, Prerana Sunilkumar, Kanchanak Khat.
  */
 class DoubleTransposition{
 
@@ -13,7 +13,7 @@ class DoubleTransposition{
 		{
 			$key[$i] = $keyValue[$i];
 		}
-		
+
 		return $key;
 	}
 	
